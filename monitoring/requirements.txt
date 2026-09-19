@@ -1,0 +1,13 @@
+# Sesi 7 -- evidently==0.7.21 adalah rilis aktif dipelihara (bukan 0.4.x lama).
+# Kode kita tetap memakai API sederhana (column_mapping-style) lewat
+# compatibility shim evidently.legacy -- lihat docstring monitor.py.
+numpy>=1.26
+pandas==3.0.2
+evidently==0.7.21
+plotly==5.24.1                # evidently 0.7.21 deklarasikan plotly<6 sendiri; pin ini untuk reproducibility
+
+# Untuk memuat model (prediction drift & classification performance butuh
+# model, bukan cuma dua file CSV seperti versi data-drift-saja sebelumnya)
+scikit-learn==1.8.0
+joblib==1.5.3
+mlflow==3.16.0

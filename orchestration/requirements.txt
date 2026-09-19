@@ -1,0 +1,3 @@
+# Sesi 8 -- Orkestrasi dengan Prefect. Versi terverifikasi berjalan bersama
+# requirements.txt di root proyek (tidak ada konflik numpy/mlflow/evidently).
+prefect==3.8.6

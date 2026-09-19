@@ -1,0 +1,12 @@
+# Dependency untuk image Docker (Sesi 6) -- SENGAJA tidak menyertakan mlflow.
+# Sesi 6 mengasumsikan models/model.pkl sudah diekspor (mlflow/export_model.py),
+# sehingga image tidak perlu bergantung pada tracking store developer.
+# Untuk development lokal Sesi 5 SEBELUM ekspor (fallback ke MLflow Registry),
+# gunakan requirements.txt di root proyek, yang sudah menyertakan mlflow.
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+pydantic==2.13.5
+pandas==3.0.2
+scikit-learn==1.8.0
+joblib==1.5.3
+numpy>=1.26

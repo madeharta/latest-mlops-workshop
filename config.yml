@@ -1,0 +1,10 @@
+model:
+  name: RandomForest
+  params:
+    n_estimators: 200
+    max_depth: 8
+
+data:
+  train_path: data/train.csv
+  test_path: data/test.csv
+  target: approved

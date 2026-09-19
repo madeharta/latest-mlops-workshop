@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment
+.env
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Models
+*.pkl
+*.joblib
+
+# Python tools
+.pytest_cache/
+.mypy_cache/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.log

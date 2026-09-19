@@ -1,0 +1,32 @@
+# Sesi 6 -- Pengganti Google Cloud Run untuk deployment lokal.
+#
+# Dijalankan dari ROOT proyek (mlops-workshop/), bukan dari dalam docker/:
+#   docker compose -f docker/docker-compose.yml up -d --build
+#
+# Kenapa lokal, bukan Cloud Run? Materi ini awalnya memakai Cloud Run
+# (lihat Silabus & README bagian riwayat keputusan). Untuk pelaksanaan
+# workshop, mekanisme deployment dipindah sepenuhnya ke Docker lokal karena
+# keterbatasan akses/kuota environment GCP bersama saat kelas berlangsung.
+# Konsep dan urutan operasinya (build image -> jalankan -> health check ->
+# ganti versi -> rollback) identik dengan yang terjadi di Cloud Run -- yang
+# berbeda hanya siapa yang menjalankan orkestrasi container: di sini Docker
+# Compose di laptop sendiri, bukan platform serverless Google.
+
+services:
+  insurance-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: insurance-api:local
+    container_name: insurance-api
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
