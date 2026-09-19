@@ -17,8 +17,6 @@ Semua kode di repo ini sudah **dijalankan dan diuji nyata** menghasilkan output 
 
 ```
 mlops-workshop/
-├── .devcontainer/devcontainer.json   # Sesi 0 -- environment seragam
-├── .vscode/launch.json               # Sesi 5 -- konfigurasi debugger
 ├── requirements.txt                  # dependency development lokal (root)
 ├── config.yml                        # Sesi 2 -- konfigurasi model
 ├── train.py                          # Sesi 2 -- pipeline training baseline
@@ -39,7 +37,6 @@ mlops-workshop/
 │   ├── Dockerfile                    # Sesi 6
 │   ├── docker-compose.yml            # Sesi 6 -- deployment lokal (pengganti Cloud Run)
 │   ├── deploy.sh                     # Sesi 6 -- CI/CD lokal: export + build + redeploy + smoke test
-├── .dockerignore
 ├── monitoring/
 │   ├── monitor.py                    # Sesi 7 -- data drift + prediction drift + performance
 │   └── requirements.txt
