@@ -50,80 +50,38 @@ mlops-workshop/
 
 ## Sesi 0 — Setup Environment (sebelum Sesi 2)
 
-### 0.1 Instalasi gcloud CLI (jika belum ada)
-
-Dibutuhkan untuk Sesi 3 (autentikasi ke GCS sebagai remote DVC). Sesi 6 dan 8 **tidak lagi butuh gcloud** — deployment dan orkestrasi sepenuhnya lokal via Docker (lihat catatan pendekatan workshop di atas). Cek dulu apakah sudah terpasang — kalau `gcloud --version` langsung menampilkan versi, lewati bagian ini.
-
-**macOS (via Homebrew — paling mudah dirawat):**
-```bash
-brew install --cask google-cloud-sdk
-```
-*Tanpa Homebrew:*
-```bash
-curl https://sdk.cloud.google.com | bash
-exec -l $SHELL           # muat ulang shell agar gcloud masuk PATH
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-    sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
-    sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-sudo apt-get update && sudo apt-get install -y google-cloud-cli
-```
-
-**Windows:**
-Unduh installer dari [cloud.google.com/sdk/docs/install](https://cloud.google.com/sdk/docs/install), jalankan `.exe`-nya (GUI, ikuti wizard), lalu buka PowerShell/Command Prompt baru agar PATH ter-refresh.
-
-> Catatan: gcloud CLI membawa Python bundle sendiri untuk kebutuhan internalnya — ini **terpisah total** dari `venv` proyek yang dibuat di §0.2. Versi Python bundle gcloud tidak memengaruhi (dan tidak dipengaruhi oleh) batas Python 3.11–3.13 yang dibahas di bawah.
-
-Setelah terpasang di platform mana pun, inisialisasi sekali:
-```bash
-gcloud init                  # login akun Google + pilih/buat project default
-# atau langkah manual (sudah dipakai di checklist §0.2 di bawah):
-gcloud auth login
-gcloud config set project <PROJECT_ID_DARI_INSTRUKTUR>
-```
-
-### 0.2 Checklist Environment Python + Docker
+### 0.1 Checklist Environment Python + Docker
 
 ```bash
+# 0. Pastikan Docker Desktop dan VSCode sudah terinstall di komputer
+open -a Docker
+
 # 1. Buka folder ini di VS Code
 code mlops-workshop
 
 # 2. Buat & aktifkan virtual environment -- WAJIB pakai python3.11 eksplisit,
 #    bukan python3 generik (lihat peringatan batas Python di bawah)
-python3.11 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 # 3. Install semua dependency sekaligus dari satu file -- versi numpy/evidently
 #    sudah dipin saling kompatibel, tidak perlu instalasi bertahap:
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 # 4. Pilih interpreter di VS Code: Command Palette -> "Python: Select Interpreter" -> ./venv
 
 # 5. Verifikasi
-python --version        # HARUS 3.11.x atau 3.12.x/3.13.x -- BUKAN 3.14+ (lihat di bawah)
+python --version        # Verifikasi versi python > 3.10
 python -c "import numpy; print(numpy.__version__)"   # harus >= 1.26 (tanpa batas atas)
 docker run hello-world  # daemon Docker hidup
-gcloud --version
+
 ```
-
-> ✅ **Update rentang Python**: migrasi ke `evidently==0.7.21` (dari `0.4.40`) menghapus batas `numpy<2.1` yang sebelumnya membuat Python 3.14+ gagal total (`pandas==3.0.2` butuh `numpy>=2.3.3` di sana, bentrok dengan evidently versi lama). Rentang Python yang valid sekarang **3.11–3.14** (`pandas`/`scikit-learn` mensyaratkan minimal 3.11; `prefect` membatasi `<3.15`). Tetap disarankan `python3.11` secara eksplisit sebagai default yang paling teruji — tapi kegagalan `ResolutionImpossible` akibat Python 3.14 sudah tidak lagi berlaku.
-
-**Alternatif (direkomendasikan jika laptop bermasalah/kebijakan institusi mengunci instalasi):**
-Buka folder ini di VS Code, lalu `Cmd/Ctrl+Shift+P` → **Dev Containers: Reopen in Container** — `requirements.txt` otomatis ter-install di dalam container (`.devcontainer/devcontainer.json` sudah dikonfigurasi).
-
-> ⚠️ **Lisensi Docker Desktop**: pembaruan Desember 2024 membatasi penggunaan gratis di lingkungan pendidikan hanya untuk mahasiswa terdaftar. Dosen/staf disarankan memakai **Podman Desktop**, **Rancher Desktop**, atau **Colima** — semua perintah `docker` di dokumen ini kompatibel (`alias docker=podman`).
 
 ---
 
 ## Sesi 1 — Motivasi & Lanskap MLOps
 
-Tidak ada kode untuk sesi ini — murni diskusi konsep. Lihat slide 3-8 di `Materi_Detail_MLOps_Sesi1-8.pptx`.
+Pengantar untuk workshop MLOPs (CI/CD/CT).
 
 ---
 
@@ -133,6 +91,11 @@ Tidak ada kode untuk sesi ini — murni diskusi konsep. Lihat slide 3-8 di `Mate
 make setup    # membuat venv + install dependency (redundan jika sudah Sesi 0)
 make run      # menjalankan train.py, hasil: Accuracy 0.9380, ROC-AUC 0.9817
 make test     # menjalankan tests/test_pipeline.py
+
+# Jika Makefile tidak jalan lakukan secara manual untuk pengujian
+python3 train.py    # menjalankan trainning
+pytest tests/ -v    # menjalankan testing model
+
 ```
 
 Ganti model tanpa menyentuh kode — edit `config.yml`:
@@ -145,11 +108,11 @@ model:
     max_depth: 3
 ```
 
-**Windows**: `make` tidak tersedia secara default. Gunakan Git Bash, WSL2, atau jalankan di dalam Dev Container.
-
 ---
 
-## Sesi 3 — Data Version Control (DVC)
+## Sesi 3 — Data Version Control (DVC) 
+## Catatan: materi ini akan diskip pada pertemua DAY-3 karena sudah dibahas di DAY-2
+## Pada DAY-3 kita hanya akan menggunakan data yang sudah tersedia pada sumber yang diberikan
 
 ```bash
 # Inisialisasi Git (jika repo ini belum jadi repo Git)
@@ -195,11 +158,11 @@ Registered version: 1
 
 Buka dashboard:
 ```bash
-mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 9001
 # buka http://127.0.0.1:5001
 ```
 
-> ⚠️ **macOS**: JANGAN pakai port 5000 default — dipakai AirPlay Receiver sejak Monterey, menyebabkan `mlflow ui` gagal/berperilaku aneh. Port 5001 di atas sudah menghindarinya.
+> ⚠️ **warning**: `mlflow ui` bisa gagal berjalan jika port 9001 sudah dipakai oleh aplikasi lain. Pastikan port 9001 belum digunakan, jika sudah pilih port lain rekomendasi > 9000.
 
 > ⚠️ **Kenapa `sqlite:///mlflow.db`, bukan `file:///...`?** MLflow versi terbaru menandai filesystem tracking backend sebagai *maintenance mode* dan bisa menolaknya langsung dengan error saat `set_experiment()` dipanggil. Backend SQLite tetap sepenuhnya lokal tapi didukung penuh.
 
@@ -230,7 +193,7 @@ curl -X POST http://127.0.0.1:8000/predict \
 
 ## Sesi 6 — Kontainerisasi & Deployment (Docker, Lokal)
 
-> **Catatan pendekatan workshop:** materi ini awalnya dirancang men-deploy ke Google Cloud Run (lihat diskusi arsitektur di `Silabus_MLOps.md`). Untuk pelaksanaan workshop ini, mekanisme deployment dipindah sepenuhnya ke **Docker Compose lokal** karena keterbatasan akses/kuota environment GCP bersama saat kelas berlangsung. Urutan operasinya — build image → jalankan → health check → ganti versi — identik dengan yang terjadi di Cloud Run; yang berbeda hanya siapa yang mengeksekusinya (Docker di laptop sendiri, bukan platform serverless Google). Endpoint publik tidak diprioritaskan di sini — cukup bisa diuji dari `localhost`.
+> **Catatan pendekatan workshop:** pada kondisi nyata umumnya deployment model dilakukan ke sistem produksi yang bisa berupa layanan di gloud public seperti Google/AWS/ ataupun on-premise server produksi. Namun, mempertimbangkan keterbatasan resource dan juga waktu pelaksanaan workshop, mekanisme deployment dilakukan ke **Docker Compose lokal**. Urutan operasinya — build image → jalankan → health check → ganti versi semuanya di Docker di laptop sendiri. Endpoint model serving dapat diakses melalui `localhost`.
 
 ### Langkah 0 — Ekspor model untuk kontainerisasi
 ```bash
@@ -252,7 +215,7 @@ Demonstrasi layer caching: ubah satu baris di `api/app.py`, jalankan `docker bui
 
 ### Bagian B — Deploy Lokal dengan Docker Compose (CI/CD)
 ```bash
-chmod +x docker/deploy.sh
+chmod +x docker/local_deploy.sh
 ./docker/deploy.sh
 ```
 
@@ -269,7 +232,7 @@ python3 scripts/test_deployment.py
 docker compose -f docker/docker-compose.yml down
 ```
 
-**Redeploy setelah model production berganti** (mis. setelah Sesi 8 mempromosikan model baru) — cukup jalankan ulang `./docker/deploy.sh`; tidak perlu urutan build→tag→push manual.
+**Redeploy setelah model production berganti** (mis. setelah Sesi 8 mempromosikan model baru) — cukup jalankan ulang `./docker/local_deploy.sh`; tidak perlu urutan build→tag→push manual.
 
 ---
 
@@ -306,11 +269,8 @@ Buka `monitoring/drift_report.html` di browser — laporan ini sekarang berisi t
 
 Di dunia nyata, label (`approved` — klaim disetujui atau tidak) sering baru diketahui berbulan-bulan setelah prediksi dibuat. Data/prediction drift adalah **early warning** yang tersedia instan; performance monitoring adalah **kebenaran akhir** yang datang belakangan.
 
-> ✅ **Riwayat versi evidently — dari 0.4.40 ke 0.7.21**: materi ini awalnya memakai `evidently==0.4.40` (rilis API lama yang lebih sederhana untuk pembelajaran) dan sempat menabrak dua bug kompatibilitas: (1) `AttributeError: np.float_ was removed` di numpy≥2.0 — bug spesifik patch `0.4.23`, sudah diperbaiki di `0.4.40`; (2) `ClassificationPreset` memanggil `plotly.figure_factory.create_distplot`, yang **dihapus** di plotly≥7 — evidently `0.4.40` mendeklarasikan `plotly>=5.10.0` **tanpa batas atas**, jadi `pip` menarik plotly terbaru yang tidak kompatibel.
->
-> Investigasi lebih lanjut menemukan bahwa **kedua bug ini murni gejala memakai rilis lama yang sudah tidak dipelihara**, bukan keterbatasan mendasar dari API sederhananya. `evidently==0.7.21` (rilis aktif) mendeklarasikan batas dependensi dengan benar (`plotly<6`, `numpy` tanpa batas atas), dan menyediakan **compatibility shim** `evidently.legacy` yang membuat API lama (`Report`, `DataDriftPreset`, `ColumnMapping`, dst.) tetap bisa dipakai persis seperti sebelumnya — cukup ganti jalur import dari `evidently.xxx` menjadi `evidently.legacy.xxx`. Materi ini sekarang memakai `evidently==0.7.21` dengan cara ini: API yang sama sederhananya untuk diajarkan, di atas rilis yang tidak menyimpan bom waktu kompatibilitas. Lihat docstring `monitoring/monitor.py` untuk detail impor.
 
-**Untuk data produksi yang lebih bermakna**: tambahkan logging sederhana di `api/app.py` yang menulis setiap payload `/predict` (plus hasil aktualnya begitu tersedia) ke file/tabel, lalu pakai itu sebagai `current` dataset alih-alih `data/production.csv` yang sintetis. Karena endpoint sekarang berjalan lokal (`http://localhost:8080`, Sesi 6), log ini mudah diakses langsung dari filesystem yang sama tanpa perlu menarik log dari cloud.
+**Untuk data produksi yang lebih nyata**: tambahkan logging sederhana di `api/app.py` yang menulis setiap payload `/predict` (plus hasil aktualnya begitu tersedia) ke file/tabel, lalu pakai itu sebagai `current` dataset. Dimana pada workshop kali ini data tersebut dianggap sudah tersedia di `data/production.csv`. 
 
 ---
 
@@ -326,11 +286,12 @@ retrain_and_compare()  →  latih kandidat baru, bandingkan dgn production saat 
 build_and_deploy_local()  →  export model → docker compose build → up --force-recreate
 ```
 
-**Kenapa ada gerbang perbandingan?** "Retrain lalu deploy otomatis" tanpa membandingkan dulu adalah anti-pola — model produksi bisa memburuk tanpa disadari kalau data baru kebetulan menghasilkan model yang lebih jelek (data quality issue, bukan perbaikan). Gerbang ini yang menjawab pertanyaan "bagaimana update model dilakukan ketika data baru menghasilkan model yang lebih baik" — jawabannya: **hanya kalau benar-benar lebih baik**, diverifikasi otomatis, bukan diasumsikan.
+**Kenapa perlu perbandingan?** "Retrain lalu deploy otomatis" tanpa membandingkan dulu adalah praktik yang tidak baik, model produksi bisa memburuk tanpa disadari kalau data baru kebetulan menghasilkan model yang lebih jelek (data quality issue, bukan perbaikan). Perbandingan ini yang menjawab pertanyaan "bagaimana update model dilakukan ketika data baru menghasilkan model yang lebih baik" — jawabannya: **hanya kalau benar-benar lebih baik**, diverifikasi otomatis, bukan diasumsikan.
 
 ```bash
-pip install -r orchestration/requirements.txt
-python3 orchestration/pipeline.py
+pip install -r orchestration/requirements.txt   # In case prefect belum terinstall
+python -m prefect server start                  # Jalankan server prefect terlebih dahulu, server prefect dapat diakses pada http://127.0.0.1:4200`
+python3 orchestration/pipeline.py               # Jalankan pipeline orkestrasi, diuji tanpa dan dengan schedule/intervals
 ```
 
 Output nyata (kasus model baru **tidak** lebih baik — data retraining identik dengan sebelumnya):
@@ -354,7 +315,7 @@ Kalau kandidat **memang** lebih baik, baris terakhir berubah jadi `PROMOTED: ver
 - `@task(retries=3)` pada `build_and_deploy_local()` menjawab kegagalan build/startup sesaat pada Docker lokal
 - Riwayat setiap run (kapan, task mana gagal/berhasil, PROMOTED atau tidak) tersimpan dan bisa dilihat lewat `prefect server start` + buka `http://127.0.0.1:4200`
 
-> **Catatan pendekatan workshop:** `build_and_deploy_local()` memanggil `docker/deploy.sh` yang men-deploy ke Docker lokal, menggantikan Cloud Build/Cloud Run untuk pelaksanaan kelas ini (lihat catatan di Sesi 6). Struktur flow-nya — urutan, kondisional, retry — identik dengan yang akan dipakai kalau task ini diarahkan ke pipeline cloud sungguhan.
+> **Catatan pendekatan workshop:** `build_and_deploy_local()` memanggil `docker/local_deploy.sh` yang men-deploy ke Docker lokal. Struktur flow-nya — urutan, kondisional, retry, identik dengan yang umumnya dipakai untuk deploye ke server produksi nyata.
 
 > Kenapa Prefect, bukan Airflow/Kubeflow/ZenML? Airflow butuh Postgres + scheduler process, Kubeflow butuh cluster Kubernetes — keduanya bertentangan dengan prinsip "zero local setup berat" yang dipegang sepanjang kuliah ini. Prefect adalah `pip install` biasa, `@task`/`@flow` di atas fungsi Python yang sudah ada.
 
