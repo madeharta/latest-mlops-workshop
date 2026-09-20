@@ -25,9 +25,17 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
+from sklearn.model_selection import train_test_split
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment("Insurance Approval Model")
+
+# Enable autologging
+mlflow.sklearn.autolog(
+    log_input_examples=True,
+    log_model_signatures=True,
+    log_models=True
+)
 
 train = pd.read_csv("data/train.csv")
 test = pd.read_csv("data/test.csv")
@@ -53,8 +61,8 @@ for name, (ModelClass, params) in MODELS.items():
         auc = roc_auc_score(y_test, proba)
         f1 = f1_score(y_test, preds)
 
-        for k, v in params.items():
-            mlflow.log_param(k, v)
+        #for k, v in params.items():
+        #    mlflow.log_param(k, v)
         mlflow.log_param("model_type", name)
         mlflow.log_metric("accuracy", acc)
         mlflow.log_metric("roc_auc", auc)
@@ -62,14 +70,14 @@ for name, (ModelClass, params) in MODELS.items():
 
         #mlflow.sklearn.log_model(model, name="model")
         # Log model
-        mlflow.sklearn.log_model(
-            model,
-            name="model",
-            serialization_format="skops",
-            skops_trusted_types=[
-                "sklearn.tree._tree.Tree"
-            ],
-        )
+        #mlflow.sklearn.log_model(
+        #    model,
+        #    name="model",
+        #    serialization_format="skops",
+        #    skops_trusted_types=[
+        #        "sklearn.tree._tree.Tree"
+        #    ],
+        #)
 
         print(f"{name}: acc={acc:.4f} auc={auc:.4f} f1={f1:.4f}")
 

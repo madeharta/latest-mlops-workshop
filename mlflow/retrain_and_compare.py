@@ -31,7 +31,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 
 MODEL_NAME = "insurance-approval-model"
-ALIAS = "production"
+ALIAS = "champion"
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment("Insurance Approval Model")
