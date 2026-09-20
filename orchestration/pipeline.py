@@ -8,17 +8,14 @@ logika ML yang ditulis ulang di sini. Yang ditambahkan Prefect:
   3. Percabangan kondisional GANDA:
        a. retrain HANYA JIKA drift melewati ambang (CT dipicu oleh monitoring)
        b. deploy HANYA JIKA model baru TERBUKTI lebih baik dari production
-          saat ini -- lihat mlflow/retrain_and_compare.py. Tanpa gerbang ini,
-          "retrain otomatis" adalah anti-pola: model produksi bisa memburuk
-          tanpa disadari kalau data baru kebetulan menghasilkan model jelek.
+          saat ini -- lihat mlflow/retrain_and_compare.py. Tanpa kodisi ini,
+          model produksi bisa memburuk tanpa disadari kalau data baru kebetulan 
+          menghasilkan model jelek.
   4. Riwayat run yang bisa diaudit (Prefect UI: `prefect server start`)
 
 Deployment (CI build image + CD redeploy) berjalan seluruhnya di Docker lokal
-lewat docker/deploy.sh -- BUKAN Cloud Build/Cloud Run. Ini pendekatan yang
-dipakai untuk pelaksanaan workshop ini (keterbatasan environment GCP saat
-kelas berlangsung); di lingkungan produksi sesungguhnya, task build_and_deploy()
-di bawah ini yang akan diganti memanggil pipeline Cloud Build/Cloud Run --
-struktur flow (urutan, kondisional, retry) tetap identik.
+lewat docker/local_deploy.sh -- BUKAN Cloud Build/Cloud Run. Ini pendekatan yang
+dipakai untuk pelaksanaan workshop ini.
 
 Jalankan (dari root proyek, venv sudah aktif):
     python3 orchestration/pipeline.py
@@ -55,10 +52,9 @@ def retrain_and_compare() -> bool:
 @task(retries=3, retry_delay_seconds=10, log_prints=True)
 def build_and_deploy_local() -> None:
     """CI (build image dari model production terbaru) + CD (redeploy
-    container lokal) dalam satu langkah -- memanggil docker/deploy.sh, yang
+    container lokal) dalam satu langkah -- memanggil docker/local_deploy.sh, yang
     di dalamnya: export_model.py -> docker compose build -> up --force-recreate
-    -> smoke test. Retry di sini menjawab kegagalan build/startup sesaat,
-    bukan lagi kegagalan jaringan gcloud seperti versi Cloud Run sebelumnya."""
+    -> smoke test."""
     result = subprocess.run(
         #["bash", "docker/deploy.sh"], capture_output=True, text=True, check=True
         ["bash", "docker/local_deploy.sh"], capture_output=True, text=True, check=True
@@ -94,7 +90,7 @@ if __name__ == "__main__":
     mlops_pipeline()
     #mlops_pipeline.serve(
     #    name="insurance-approval-test",
-    #    interval=60,
+    #    interval=1,
     #)
     #mlops_pipeline.serve(
     #    name="insurance-approval-daily",
