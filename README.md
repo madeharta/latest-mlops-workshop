@@ -48,7 +48,7 @@ mlops-workshop/
 
 ---
 
-## Sesi 0 — Setup Environment (sebelum Sesi 2)
+## Sesi 0 — Setup Environment 
 
 ### 0.1 Checklist Environment Python + Docker
 
@@ -111,8 +111,7 @@ model:
 ---
 
 ## Sesi 3 — Data Version Control (DVC) 
-## Catatan: materi ini akan diskip pada pertemua DAY-3 karena sudah dibahas di DAY-2
-## Pada DAY-3 kita hanya akan menggunakan data yang sudah tersedia pada sumber yang diberikan
+### Catatan: materi ini akan diskip pada pertemua DAY-3 karena sudah dibahas di DAY-2. Pada DAY-3 kita hanya akan menggunakan data yang sudah tersedia pada sumber yang diberikan
 
 ```bash
 # Inisialisasi Git (jika repo ini belum jadi repo Git)
