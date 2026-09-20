@@ -1,9 +1,8 @@
 # MLOps Workshop: Dari Eksperimen ke Produksi
 
 Source code dan resource lengkap untuk Sesi 1-8, mendampingi:
-- `Silabus_MLOps.md`
-- `Materi_Detail_MLOps_Sesi1-8.pptx`
-- `Panduan_Pelaksanaan_Workshop.md` (langkah menjalankan seluruh workshop)
+- `Materi MLOps Day-3.pptx`
+- `Panduan Pelaksanaan Workshop.md` (langkah menjalankan seluruh workshop)
 
 Environment: **VS Code + Docker (lokal)** untuk development **dan** deployment.
 
@@ -111,7 +110,7 @@ model:
 ---
 
 ## Sesi 3 — Data Version Control (DVC) 
-### Catatan: materi ini akan diskip pada pertemua DAY-3 karena sudah dibahas di DAY-2. Pada DAY-3 kita hanya akan menggunakan data yang sudah tersedia pada sumber yang diberikan
+### Catatan: materi ini akan diskip pada pertemua DAY-3 karena sudah dibahas di DAY-2. Pada DAY-3 kita hanya akan menggunakan data yang sudah tersedia pada sumber yang diberikan.
 
 ```bash
 # Inisialisasi Git (jika repo ini belum jadi repo Git)
