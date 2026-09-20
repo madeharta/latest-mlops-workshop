@@ -12,7 +12,7 @@ Semua kode di repo ini sudah **dijalankan dan diuji nyata** menghasilkan output 
 
 ---
 
-## Struktur Proyek
+## Struktur Kode Program
 
 ```
 mlops-workshop/
@@ -91,7 +91,7 @@ make setup    # membuat venv + install dependency (redundan jika sudah Sesi 0)
 make run      # menjalankan train.py, hasil: Accuracy 0.9380, ROC-AUC 0.9817
 make test     # menjalankan tests/test_pipeline.py
 
-# Jika Makefile tidak jalan lakukan secara manual untuk pengujian
+# Jika Makefile tidak didukung, lakukan secara manual untuk pengujian
 python3 train.py    # menjalankan trainning
 pytest tests/ -v    # menjalankan testing model
 
