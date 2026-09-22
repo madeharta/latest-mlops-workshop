@@ -43,7 +43,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Mode: MODEL UPDATE"
 
     echo ""
-    echo "[1/2] Checking model file..."
+    echo "Checking model file..."
 
     if [ ! -f "${MODEL_SOURCE}" ]; then
         echo "ERROR: ${MODEL_SOURCE} not found."
@@ -53,7 +53,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Found: ${MODEL_SOURCE}"
 
     echo ""
-    echo "[2/2] Copying new model into container..."
+    echo "Copying new model into container..."
 
     docker cp \
         "${MODEL_SOURCE}" \
@@ -62,6 +62,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo ""
     echo "Restarting container..."
 
+    # Need to restart the container so that the new model gets reloaded
     docker restart "${CONTAINER_NAME}"
 
     echo ""
@@ -79,31 +80,14 @@ else
     echo "Container '${CONTAINER_NAME}' does not exist."
     echo "Mode: FIRST DEPLOYMENT"
 
-    echo ""
-    echo "[1/3] Checking model file..."
+    echo ">> [CI] Menarik model 'production' terbaru dari MLflow Registry..."
+    python3 mlflow/export_model.py
 
-    if [ ! -f "${MODEL_SOURCE}" ]; then
-        echo "ERROR: ${MODEL_SOURCE} not found."
-        exit 1
-    fi
+    echo ">> [CI] Build image dari kode + model terbaru..."
+    docker compose -f docker/docker-compose.yml build
 
-    echo "Found: ${MODEL_SOURCE}"
-
-    echo ""
-    echo "[2/3] Building Docker image..."
-
-    docker build \
-        -f docker/Dockerfile \
-        -t "${IMAGE_NAME}:latest" \
-        .
-
-    echo ""
-    echo "[3/3] Starting container..."
-
-    docker run -d \
-        -p "${HOST_PORT}:${CONTAINER_PORT}" \
-        --name "${CONTAINER_NAME}" \
-        "${IMAGE_NAME}:latest"
+    echo ">> [CD] Redeploy container (mengganti yang lama jika masih berjalan)..."
+    docker compose -f docker/docker-compose.yml up -d --force-recreate
 
     echo ""
     echo "======================================"
@@ -116,6 +100,9 @@ fi
 # ============================================================
 # Show container status
 # ============================================================
+
+echo ">> Menunggu container siap..."
+sleep 4
 
 echo ""
 echo "Container status:"
@@ -131,5 +118,20 @@ echo "http://127.0.0.1:${HOST_PORT}/docs"
 
 echo ""
 echo "======================================"
+
+echo ">> Smoke test endpoint..."
+if curl -sf http://localhost:8080/ > /dev/null; then
+    echo ">> Deploy lokal BERHASIL. Endpoint: http://localhost:8080"
+    echo "   Uji manual: curl http://localhost:8080/"
+    echo "   Docs interaktif: http://localhost:8080/docs"
+else
+    echo ">> Smoke test GAGAL -- cek log dengan:"
+    echo "   docker compose -f docker/docker-compose.yml logs"
+    exit 1
+fi
+
+echo ""
+echo ">> Untuk menghentikan & membersihkan:"
+echo "   docker compose -f docker/docker-compose.yml down"
 
 

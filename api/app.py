@@ -31,8 +31,9 @@ if os.path.exists(MODEL_PATH):
     MODEL_SOURCE = "local file (api/models/model.pkl)"
 else:
     import mlflow.sklearn
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
-    model = mlflow.sklearn.load_model("models:/insurance-approval-model@production")
+    #mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    mlflow.set_tracking_uri("http://127.0.0.1:9001")
+    model = mlflow.sklearn.load_model("models:/insurance-approval-model@champion")
     MODEL_SOURCE = "MLflow Model Registry"
 
 

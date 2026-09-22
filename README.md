@@ -6,8 +6,6 @@ Source code dan resource lengkap untuk Sesi 1-8, mendampingi:
 
 Environment: **VS Code + Docker (lokal)** untuk development **dan** deployment.
 
-> **Catatan pendekatan workshop:** deployment awalnya dirancang ke Google Cloud Run (lihat riwayat keputusan arsitektur di `Silabus_MLOps.md`). Untuk pelaksanaan workshop ini, mekanisme deployment dipindah sepenuhnya ke Docker Compose lokal karena keterbatasan akses/kuota environment GCP bersama saat kelas berlangsung — konsep CI/CD/CT tetap identik, hanya eksekusinya di laptop sendiri, bukan cloud. GCS (Google Cloud Storage) tetap dipakai untuk DVC remote di Sesi 3, karena itu bagian terpisah dari mekanisme deployment.
-
 Semua kode di repo ini sudah **dijalankan dan diuji nyata** menghasilkan output yang ditampilkan di slide materi (angka akurasi, screenshot, dsb.) — bukan cuplikan yang belum pernah dieksekusi.
 
 ---
@@ -17,31 +15,36 @@ Semua kode di repo ini sudah **dijalankan dan diuji nyata** menghasilkan output 
 ```
 mlops-workshop/
 ├── requirements.txt                  # dependency development lokal (root)
-├── config.yml                        # Sesi 2 -- konfigurasi model
-├── train.py                          # Sesi 2 -- pipeline training baseline
-├── Makefile                          # Sesi 2 -- automation layer
+├── config.yml                        # Environment test -- konfigurasi model
+├── train.py                          # Environment test -- pipeline training baseline
+├── Makefile                          # Environment test -- automation layer
 ├── data/
 │   ├── generate_dataset.py           # cara dataset dibuat (opsional dijalankan ulang)
 │   ├── train.csv / test.csv          # data training & evaluasi
 │   └── production.csv                # data "produksi" dengan drift disengaja (Sesi 7)
-├── tests/test_pipeline.py            # Sesi 2 -- unit test contoh
+├── tests/test_pipeline.py            # Environment test -- unit test contoh
 ├── mlflow/
-│   ├── train_with_mlflow.py          # Sesi 4 -- tracking + registry, bootstrap alias "production"
+│   ├── train_with_mlflow.py          # Tracking and Registry -- tracking + registry, bootstrap alias "production"
 │   ├── export_model.py               # jembatan registry (alias production) -> file statis untuk Docker
-│   └── retrain_and_compare.py        # Sesi 8 -- CT: retrain + bandingkan + promosikan jika lebih baik
+│   ├── retrain_and_compare.py        # CT: retrain + bandingkan + promosikan jika lebih baik
+│   ├── zmlflow_explore_tracking.py   # Advanced tracking exploration
+│   ├── ztrain_with_mlflow_autologing.py   # Autologging feature testing
+│   └── ztrain_with_mlflow_regression.py   # Autologging with regression model
 ├── api/
-│   ├── app.py                        # Sesi 5 -- FastAPI serving
+│   ├── app.py                        # FastAPI serving
 │   └── requirements.txt              # dependency ramping khusus image Docker
 ├── docker/
-│   ├── Dockerfile                    # Sesi 6
-│   ├── docker-compose.yml            # Sesi 6 -- deployment lokal (pengganti Cloud Run)
-│   ├── deploy.sh                     # Sesi 6 -- CI/CD lokal: export + build + redeploy + smoke test
+│   ├── Dockerfile                    # Model deployment
+│   ├── docker-compose.yml            # deployment lokal (pengganti Cloud Run)
+│   ├── local_deploy.sh               # CI/CD lokal: export + build + redeploy
 ├── monitoring/
-│   ├── monitor.py                    # Sesi 7 -- data drift + prediction drift + performance
-│   └── requirements.txt
-├── scripts/test_deployment.py        # Sesi 6 -- uji endpoint lokal yang sudah live
+│   ├── monitor.py                    # Model monitoring: data drift + prediction drift + performance
+│   ├── run_evidently_service.sh      # Run evidently UI as docker container
+│   ├── zmonitor_workspace.py         # Code for testing the workspace so that the report is available on UI
+│   └── requirements.txt              # Dependency, already provided in the root folder
+├── scripts/test_deployment.py        # Model serving: uji endpoint lokal yang sudah live
 └── orchestration/
-    ├── pipeline.py                   # Sesi 8 -- CI/CD/CT dengan Prefect
+    ├── pipeline.py                   # Otomisasi: CI/CD/CT dengan Prefect
     └── requirements.txt
 ```
 
@@ -80,7 +83,7 @@ docker run hello-world  # daemon Docker hidup
 
 ## Sesi 1 — Motivasi & Lanskap MLOps
 
-Pengantar untuk workshop MLOPs (CI/CD/CT).
+Pengantar untuk workshop DAY-3.
 
 ---
 
@@ -157,13 +160,27 @@ Registered version: 1
 Buka dashboard:
 ```bash
 mlflow ui --backend-store-uri sqlite:///mlflow.db --port 9001
-# buka http://127.0.0.1:5001
 ```
+### buka http://127.0.0.1:9001 dengan web browser untuk melihat MLFlow UI dan model yang sudah di log 
 
-> ⚠️ **warning**: `mlflow ui` bisa gagal berjalan jika port 9001 sudah dipakai oleh aplikasi lain. Pastikan port 9001 belum digunakan, jika sudah pilih port lain rekomendasi > 9000.
+> ⚠️ **warning**: `mlflow ui` bisa gagal berjalan jika port 9001 sudah dipakai oleh aplikasi lain. Pastikan port 9001 belum digunakan, jika sudah pilih port lain rekomendasi > 9001.
 
 > ⚠️ **Kenapa `sqlite:///mlflow.db`, bukan `file:///...`?** MLflow versi terbaru menandai filesystem tracking backend sebagai *maintenance mode* dan bisa menolaknya langsung dengan error saat `set_experiment()` dipanggil. Backend SQLite tetap sepenuhnya lokal tapi didukung penuh.
 
+Lakukan explorasi fitur-fitur MLFlow dengan menjalankan kode-kode berikut secarfa bergantian. Kemudian pantau MLFlow UI untuk melihat perbedaan yang diberikan oleh setiap kode program.
+
+```bash
+# Untuk menguji fitur autologgin dari MLFlow
+python3 mlflow/ztrain_with_mlflow_autologgin.py
+
+# Untuk menguji fitur autologgin dengan model regression
+python3 mlflow/ztrain_with_mlflow_autologgin.py
+
+# Untuk menguji fitur advanced tracking pada MLflow
+python3 mlflow/zmlflow_explore_tracking.py
+```
+
+Untuk setiap eksekusi program diatas, buka MLFlfow UI dan perhatikan informasi apa saja yang diberikan. Kemudian coba hubungkan baris kode program mana yang menghasilkan output tersebut.
 ---
 
 ## Sesi 5 — Serving Model dengan FastAPI
@@ -186,6 +203,8 @@ curl -X POST http://127.0.0.1:8000/predict \
 **Debugging** — tekan `F5` di VS Code (memakai `.vscode/launch.json` yang sudah disiapkan), pasang breakpoint di baris `proba = model.predict_proba(df)[0][1]` dalam `api/app.py`, lalu kirim request `/predict` dari terminal lain.
 
 `api/app.py` otomatis memuat model dari **MLflow Registry** di tahap ini (karena `api/models/model.pkl` belum ada) — inilah jalur development. Lanjut ke Sesi 6 untuk mengekspornya menjadi file statis.
+
+Kembali ke termina dimana perintah uvicorn dilakukan dan matikan service dengan menekan Ctrl+C sebelum melanjutkan ke sesi berikutnya.
 
 ---
 
@@ -214,7 +233,7 @@ Demonstrasi layer caching: ubah satu baris di `api/app.py`, jalankan `docker bui
 ### Bagian B — Deploy Lokal dengan Docker Compose (CI/CD)
 ```bash
 chmod +x docker/local_deploy.sh
-./docker/deploy.sh
+./docker/local_deploy.sh
 ```
 
 Script ini menjalankan alur CI/CD lokal secara berurutan: **[CI]** `mlflow/export_model.py` (tarik model production terbaru) → `docker compose build` (build image) → **[CD]** `docker compose up -d --force-recreate` (redeploy container, mengganti yang lama jika masih berjalan) → smoke test otomatis ke `http://localhost:8080/`.
@@ -238,13 +257,21 @@ docker compose -f docker/docker-compose.yml down
 
 Tiga sinyal, bukan satu — banyak tutorial berhenti di data drift saja. Materi ini menambahkan **prediction drift** dan **model/concept drift (performance)**:
 
+Jalankan server evidently-ui dengan perintah berikut:
+
+```bash
+sh run_evidently_service.sh
+```
+Server ini akan menampilkan report monitoring yang disimpan oleh evidently pada workspace yang dibuat. Selanjutnya jalankan code monitoring dengan perintah berikut:
+
 ```bash
 python3 monitoring/monitor.py
 ```
 
 Output nyata (dari data yang sengaja diberi drift):
 ```
-Laporan tersimpan di monitoring/drift_report.html
+Laporan tersimpan di monitoring/drift_report.html atau melalui halaman monitoring evidently-ui yang dapat diakses melalui http://localhost:9002. 
+
 
 1. DATA DRIFT        -- 3/8 kolom input drift (share: 0.375)
 2. PREDICTION DRIFT  -- tidak terdeteksi pada output model
@@ -269,6 +296,8 @@ Di dunia nyata, label (`approved` — klaim disetujui atau tidak) sering baru di
 
 
 **Untuk data produksi yang lebih nyata**: tambahkan logging sederhana di `api/app.py` yang menulis setiap payload `/predict` (plus hasil aktualnya begitu tersedia) ke file/tabel, lalu pakai itu sebagai `current` dataset. Dimana pada workshop kali ini data tersebut dianggap sudah tersedia di `data/production.csv`. 
+
+Jalankan kode program beberapa kali, kemudian lihat pada halaman monitoring report yang digenerate berdasarkan waktu eksekusi program. Semua akan tercatat dan dapat dijadikan acuan evaluasi model.
 
 ---
 
@@ -351,7 +380,7 @@ python3 mlflow/train_with_mlflow.py   # Sesi 4 -- bootstrap alias "production"
 uvicorn api.app:app --reload          # Sesi 5 (Ctrl+C untuk lanjut)
 python3 mlflow/export_model.py        # jembatan ke Sesi 6
 docker build -f docker/Dockerfile -t insurance-api .   # Sesi 6 Bagian A
-./docker/deploy.sh                    # Sesi 6 Bagian B -- CI/CD lokal, tanpa GCP
+./docker/local_deploy.sh                    # Sesi 6 Bagian B -- CI/CD lokal, tanpa GCP
 python3 monitoring/monitor.py         # Sesi 7
 python3 orchestration/pipeline.py     # Sesi 8 -- CI/CD/CT: retrain, bandingkan, deploy hanya jika lebih baik
 ```
