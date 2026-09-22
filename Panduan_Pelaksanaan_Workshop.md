@@ -1,5 +1,5 @@
 # Panduan Pelaksanaan Workshop MLOps
-### Sesi 1 s.d. Sesi 6 — Panduan Fasilitator/Instruktur
+### Panduan Fasilitator/Instruktur
 
 Dokumen ini menjabarkan urutan aktivitas untuk menjalankan seluruh kegiatan workshop dari persiapan hingga teknik orkestrasi MLOps. Dokumen lain yang menjadi rujukan:
 
@@ -17,7 +17,7 @@ Dokumen ini menjabarkan urutan aktivitas untuk menjalankan seluruh kegiatan work
 | 3 | FastAPI | 60 |
 | 4 | Docker + Deploy Lokal | 30  |
 | 5 | Evidently AI (3 sinyal: data/prediction/performance) | 120 |
-| 6 | Prefect + Penutup | 60 |
+| 6 | Prefect + Incident Handling + Penutup | 60 |
 ---
 
 **Notasi yang dipakai:**
