@@ -61,7 +61,7 @@ if os.path.exists(MODEL_PATH):
 else:
     import mlflow.sklearn
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
-    model = mlflow.sklearn.load_model("models:/insurance-approval-model@production")
+    model = mlflow.sklearn.load_model("models:/insurance-approval-model@champion")
 
 # Reference: representasi data yang dipakai saat training/evaluasi (Sesi 2-4)
 reference = pd.read_csv("data/test.csv").copy()

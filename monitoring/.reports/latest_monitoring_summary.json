@@ -1,0 +1,8 @@
+{
+    "reference_accuracy": 0.938,
+    "current_accuracy": 0.888,
+    "accuracy_drop": 0.04999999999999993,
+    "drifted_features": 2,
+    "data_drift_share": 0.25,
+    "retraining_required": true
+}
