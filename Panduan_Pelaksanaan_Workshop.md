@@ -16,7 +16,7 @@ Dokumen ini menjabarkan urutan aktivitas untuk menjalankan seluruh kegiatan work
 | 2 | MLflow | 105 |
 | 3 | FastAPI | 60 |
 | 4 | Docker + Deploy Lokal | 30  |
-| 5 | Evidently AI (3 sinyal: data/prediction/performance) | 120 |
+| 5 | Evidently AI (3 sinyal: data/prediction/performance) | 90 |
 | 6 | Prefect + Incident Handling + Penutup | 60 |
 ---
 
