@@ -9,6 +9,7 @@ __pycache__/
 # MLflow
 mlruns/
 mlflow.db
+.mlflow_artifacts/
 
 # Models
 *.pkl
@@ -28,5 +29,6 @@ mlflow.db
 # Docker
 *.log
 
-# ignore all files/directopries started with .
-.*
+# monitoring
+.workspace*/
+.reports/
