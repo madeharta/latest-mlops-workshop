@@ -32,23 +32,25 @@ Dokumen ini menjabarkan urutan aktivitas untuk menjalankan seluruh kegiatan work
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #1–2]` — judul & peta 8 sesi, orientasikan mahasiswa ke keseluruhan arc kuliah |
-| B (60’) | `[Detail #3–7]`: divider → proses masalah klasik → definisi MLOps → maturity model → peta arsitektur |
-| Diskusi (30’) | Slide `[Detail #4]` memuat instruksi diskusi kelas: minta mahasiswa membawa/menceritakan satu studi kasus kegagalan deployment ML, identifikasi tahap mana yang absen |
-| C/D | *(tidak berlaku — tidak ada lab hands-on)* |
-| E (5’) | `[Detail #8]` Rangkuman Sesi 1 |
-
-**Persiapan sebelum kelas:** minta mahasiswa memikirkan satu contoh (media/berita/pengalaman) sebagai bahan diskusi 30 menit di atas — sampaikan ini di akhir sesi sebelumnya atau lewat pengumuman H-3.
+| A (5’) | `[Slide #4]` — Pengantar peta pembelajaran workshop |
+| B (5’) | `[Slide #5]`: Pengenalan tools MLOps dari OSS hingga Enterprise grade |
+| E (5’) | `[Slide #6]` Penjelasan tools yang akan dipakai pada workshop |
 
 ## 2. Persiapan Awal
 
 ### 2.1 Tugas Instruktur
 
 Mendistribusikan kode resource yang diperlukan dan memantau/mendampingi proses konfigurasi environment untuk persiapan workshop. Memastikan semua mahasiswa sudah melakukan proses konfigurasi dengan benar, sesuai requirements.
-\
+
 > **Catatan pendekatan workshop:** deployment (Sesi 6) dan orkestrasi (Sesi 8) berjalan sepenuhnya lokal via Docker 
 
 ### 2.2 Tugas Mahasiswa (Sesi 0, pada awal sesi - 15 Menit)
+
+| Fase | Slide/Aktivitas |
+|---|---|
+| A (5’) | `[Slide #7]` Penjelasan terkait data yang akan dipakai pada workshop |
+| B (5’) | `[Slide #8]` Penjelasan struktur kode program selama workshop (anatomi struktur proyek) |
+| E (15’) | `[Slide #9]` Persiapan dan pengecekan lingkungan pengembangan pada komputer masing-masing peserta |
 
 Checklist ini ada di `README.md` bagian "Sesi 0", mahasiswa menjalankannya mandiri dan melapor jika ada kegagalan pada awal sesi terkait konfigurasi environment. Hal-hal yang perlu dicek:
 
@@ -71,12 +73,6 @@ docker run hello-world                                # daemon Docker hidup
 ---
 
 ## 3. Sesi 1 — Reproducibility & Struktur Proyek
-
-| Fase | Slide/Aktivitas |
-|---|---|
-| A (5’) | `[Ringkas #7–8]` |
-| B (20’) | `[Detail #9]` divider, `[Detail #15]` anatomi struktur proyek |
-| C (40’) — demo langsung | `[Detail #10]` langkah setup → `[Detail #11–14]` config.yml/train.py/Makefile |
 
 **Skrip demo (jalankan persis, proyeksikan terminal):**
 ```bash
@@ -107,12 +103,6 @@ python3 train.py    # menjalankan trainning
 pytest tests/ -v    # menjalankan testing model
 ```
 
-| Fase | Slide/Aktivitas |
-|---|---|
-| D (35’) — lab mandiri | Mahasiswa mengulang langkah di atas di laptop sendiri; tantangan tambahan: ganti ke `DecisionTree` dan bandingkan akurasi tiga model secara manual |
-| E (10’) | `[Detail #16]` Rangkuman Sesi 2 |
-
-
 ---
 
 ## 4. Sesi 2 — Experiment Tracking & Model Registry (MLflow)
@@ -121,10 +111,12 @@ Sesi ini yang paling padat tutorialnya — pertimbangkan mengurangi Fase B jika 
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #11–12]` |
-| B (25’) | `[Detail #25–27]` divider → masalah tanpa tracking → tiga komponen MLflow |
-| **Gotcha wajib disampaikan** | `[Detail #28]` — backend `file:///` deprecated, HARUS pakai `sqlite:///` |
-| C (45’) — demo langsung | `[Detail #29–37]` |
+| A (10’) | `[Detail #11–16]` Pengantar tentang MLflow dan diskusi singkat |
+| B (10’) - demo langsung | `[Detail #17-18]` Menjalankan eksperimen pada MLFlow dan melihat hasilnya pada MLflow UI|
+| **Gotcha wajib disampaikan** | `[Detail #18]` — backend `file:///` deprecated, HARUS pakai `sqlite:///` |
+| C (35’) - demo langsung | `[Detail #19–26]` | Menguji fitur-fitur MLflow seperti autologgin dan advanced tracking |
+| D (20’) - demo langsung | `[Detail #27–29]` | Melakukan model registrasi dan explorasi fitur model registry MLFlow |
+| D (15’) - latihan langsung | `[Detail #27–29]` | Melakukan model registrasi dan explorasi fitur model registry MLFlow |
 
 **Skrip demo:**
 ```bash
@@ -143,15 +135,24 @@ Buka dashboard di proyektor:
 ```bash
 mlflow ui --backend-store-uri sqlite:///mlflow.db --port 9001
 ```
-Buka `http://127.0.0.1:5001` di browser, tunjukkan tabel perbandingan (bandingkan dengan `[Detail #33]` screenshot), klik ke Model Registry, tunjukkan versi 1 ter-registrasi.
+Buka `http://127.0.0.1:9001` di browser, tunjukkan tabel perbandingan (bandingkan dengan `[Detail #33]` screenshot), klik ke Model Registry, tunjukkan versi 1 ter-registrasi.
 
 > ⚠️ **warning**: `mlflow ui` bisa gagal berjalan jika port 9001 sudah dipakai oleh aplikasi lain. Pastikan port 9001 belum digunakan, jika sudah pilih port lain rekomendasi > 9000.
 
-| Fase | Slide/Aktivitas |
-|---|---|
-| D (40’) — lab mandiri | Mahasiswa menjalankan `train_with_mlflow.py`, membuka UI di port unik per orang (`--port 500X`) agar tidak bentrok jika berbagi jaringan yang sama, lalu registrasi model sendiri |
-| Diskusi (10’) | `[Detail #38]` MLflow vs W&B vs Neptune.ai |
-| E (5’) | `[Detail #39]` Rangkuman Sesi 4 |
+Lakukan explorasi fitur-fitur MLFlow dengan menjalankan kode-kode berikut secarfa bergantian. Kemudian pantau MLFlow UI untuk melihat perbedaan yang diberikan oleh setiap kode program.
+
+```bash
+# Untuk menguji fitur autologgin dari MLFlow
+python3 mlflow/ztrain_with_mlflow_autologgin.py
+
+# Untuk menguji fitur autologgin dengan model regression
+python3 mlflow/ztrain_with_mlflow_autologgin.py
+
+# Untuk menguji fitur advanced tracking pada MLflow
+python3 mlflow/zmlflow_explore_tracking.py
+```
+
+Untuk setiap eksekusi program diatas, buka MLFlfow UI dan perhatikan informasi apa saja yang diberikan. Kemudian coba hubungkan baris kode program mana yang menghasilkan output tersebut.
 
 ---
 
@@ -159,9 +160,9 @@ Buka `http://127.0.0.1:5001` di browser, tunjukkan tabel perbandingan (bandingka
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #13–14]` |
-| B (20’) | `[Detail #40–41]` divider → pola-pola serving |
-| C (45’) — demo langsung | `[Detail #42–49]` |
+| A (5’) | `[Ringkas #32]` Pengenalan model serving dengan FastAPI|
+| B (15’) | `[Detail #33-34]` Penjelasan kode program dan API dari FastAPI untuk model serving |
+| C (40’) — demo langsung | `[Detail #35]` Demo deployment model dengan FastAPI diikuti handson oleh mahasiswa |
 
 **Skrip demo:**
 ```bash
@@ -182,20 +183,15 @@ Tunjukkan eksekusi berhenti di breakpoint, inspeksi variabel `df`.
 
 **Demo validasi gagal (`[Detail #49]`)** — kirim payload dengan field hilang, tunjukkan HTTP 422 otomatis tanpa kode tambahan.
 
-| Fase | Slide/Aktivitas |
-|---|---|
-| D (40’) — lab mandiri | Mahasiswa menjalankan sendiri, mencoba breakpoint sendiri, lalu **mengubah satu field jadi tipe salah** untuk melihat pesan error 422 |
-| Diskusi (10’) | `[Detail #50]` REST vs gRPC vs TorchServe/Triton |
-| E (5’) | `[Detail #51]` Rangkuman Sesi 5 |
-
 ---
 
 ## 6. Sesi 4 — Kontainerisasi & Deployment (Docker, Lokal)
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #15–16]` |
-| B (20’) | `[Detail #52–55]` divider → image vs container → Dockerfile → kenapa urutan instruksi penting |
+| A (5’) | `[Ringkas #39]` Penjelasan model deployment pada environment lokal dengan docker|
+| B (20’) - demo langsung | `[Detail #40]` Melakukan deployment model lokal dengan docker diikuti handson peserta |
+| D (20’) — lab | `[Detail #40]` Peserta melakukan mengujian terhadap API yang sudah dideploy baik melalui browser atau terminal |
 
 ### Bagian A — Belajar Docker (demo langsung, 30’)
 
@@ -231,31 +227,31 @@ python3 scripts/test_deployment.py
 
 `[Detail #62]` (restart policy & health check) — jelaskan `restart: unless-stopped` dan `healthcheck` sebagai pengganti auto-healing pada layanan server produksi yang umum dipakai.
 
-| Fase | Slide/Aktivitas |
-|---|---|
-| D (45’) — lab mandiri | Mahasiswa mengulang Bagian A, lalu `./docker/deploy.sh` sendiri di laptop masing-masing (tiap mahasiswa punya `localhost:8080` sendiri — tidak ada konflik nama seperti di Cloud Run) |
-| **Sebelum sesi selesai** | `[Detail #63]` — `docker compose -f docker/docker-compose.yml down` untuk membebaskan port; tidak ada kontrol biaya cloud yang perlu dikhawatirkan |
-| Diskusi (10’) | `[Detail #64]` Deployment Lokal vs Cloud Run vs ECS/Fargate vs Kubernetes — tabel sudah menyertakan baris "Docker Compose (lokal)" sebagai baseline pembanding |
-| E (10’) | `[Detail #65]` Rangkuman Sesi 6 |
-
 ---
 
 ## 7. Sesi 5 — Monitoring Model di Produksi (Evidently AI)
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #17–18]` |
-| B (25’) | `[Detail #66–68]` divider → taksonomi tiga sinyal → tabel perbandingan (butuh ground truth? kecepatan? yang diukur?) |
-| **Gotcha wajib disampaikan** | `[Detail #69]` — dua lapis pinning versi: evidently/numpy DAN plotly (lihat detail di bawah) |
-| C (45’) — demo langsung | `[Detail #70–74]` |
+| A (15’) | `[Ringkas #42–46]` Penjelasan terkait model monitoring dan tools evidently AI|
+| B (35’) - demo langsung| `[Detail #47–48]` Melakukan model monitoring dengan evidently AI diikuti handson peserta |
+| C (25’) - lab | `[Detail #49-53]` Membaca eveidently report secara lokal maupun melalui server UI|
+| D (20’) | `[Detail #54-56]` Penetapan kriteria re-trainning model dan dampaknya |
 
 **Skrip demo:**
+Jalankan server evidently-ui dengan perintah berikut:
+
+```bash
+sh run_evidently_service.sh
+```
+Server ini akan menampilkan report monitoring yang disimpan oleh evidently pada workspace yang dibuat. Selanjutnya jalankan code monitoring dengan perintah berikut:
+
 ```bash
 python3 monitoring/monitor.py
 ```
 Output nyata:
 ```
-Laporan tersimpan di monitoring/drift_report.html
+Laporan tersimpan di monitoring/drift_report.html atau melalui halaman monitoring evidently-ui yang dapat diakses melalui http://localhost:9002. 
 
 1. DATA DRIFT        -- 3/8 kolom input drift (share: 0.375)
 2. PREDICTION DRIFT  -- tidak terdeteksi pada output model
@@ -267,13 +263,7 @@ Buka `monitoring/drift_report.html` di browser — scroll ke tiga bagian: tabel 
 
 **Poin pedagogis kunci — tekankan ini secara eksplisit (`[Detail #75]`)**: prediction drift **tidak terdeteksi** secara statistik pada output di atas, padahal accuracy sungguhan turun 5 poin persentase. Ini bukti langsung kenapa memantau satu sinyal saja (prediction drift lebih murah karena tak perlu menunggu label) bisa **melewatkan** penurunan performa nyata. Jadikan ini diskusi: "kalau tim kalian hanya pasang alert di prediction drift, insiden ini tidak akan pernah terdeteksi."
 
-`[Detail #76]` (kebijakan operasional) — jelaskan bahwa trigger retraining memakai **OR dari dua ambang** (data drift ≥0.30 ATAU accuracy turun ≥0.03), bukan cuma satu sinyal — langsung tersambung ke temuan di atas.
-
-| Fase | Slide/Aktivitas |
-|---|---|
-| D (35’) — lab mandiri | Mahasiswa menjalankan sendiri, lalu memodifikasi `data/production.csv` (geser kolom lain, atau kembalikan salah satu dari tiga kolom yang drift ke distribusi asli) untuk mengamati bagaimana ketiga angka bereaksi berbeda |
-| Diskusi (15’) | `[Detail #77–79]` sumber data produksi bermakna → shadow/canary/A-B testing (S2) → keterbatasan statistical drift detection & label latency |
-| E (5’) | `[Detail #80]` Rangkuman Sesi 7 |
+`[Detail #56]` (kebijakan operasional) — jelaskan bahwa trigger retraining memakai **OR dari dua ambang** (data drift ≥0.30 ATAU accuracy turun ≥0.03), bukan cuma satu sinyal — langsung tersambung ke temuan di atas.
 
 ---
 
@@ -281,12 +271,17 @@ Buka `monitoring/drift_report.html` di browser — scroll ke tiga bagian: tabel 
 
 | Fase | Slide/Aktivitas |
 |---|---|
-| A (5’) | `[Ringkas #19–20]` |
-| B (30’) | `[Detail #81–84]` divider → masalah orkestrasi manual → apa yang ditambahkan orkestrasi → tabel 4 tools |
-| **Keputusan tool** | `[Detail #85]` — kenapa Prefect dipilih untuk workshop ini |
-| C (35’) — demo langsung | `[Detail #86–87]` |
+| A (10’) | `[Ringkas #58–61]` Pengantar terkait MLOps orkestrasi dengan prefect|
+| **Keputusan tool** | `[Detail #61]` — kenapa Prefect dipilih untuk workshop ini |
+| B (30’) - demo langsung | `[Detail #62]` Penjelasan kode program workflow otomisasi diikuti handson peserta |
 
 **Skrip demo:**
+```bash
+pip install -r orchestration/requirements.txt   # In case prefect belum terinstall
+python -m prefect server start                  # Jalankan server prefect terlebih dahulu, server prefect dapat diakses pada http://127.0.0.1:4200`
+python3 orchestration/pipeline.py               # Jalankan pipeline orkestrasi, diuji tanpa dan dengan schedule/intervals
+```
+
 ```bash
 pip install -r orchestration/requirements.txt
 python -m prefect server start
@@ -296,14 +291,13 @@ Tunjukkan log Prefect live di terminal — perhatikan tiga hal: (1) nama task (`
 
 > **Poin pedagogis kunci**: kemungkinan besar hasil pertama adalah `NOT_PROMOTED` (data retraining identik dengan data yang sudah dipakai) — ini **bukan kegagalan demo**, justru bukti gerbang kualitas bekerja. Siapkan skenario `PROMOTED` sebagai cadangan: jalankan `mlflow/retrain_and_compare.py` secara terpisah setelah mengubah `data/train.csv` (mis. gabungkan dengan data tambahan), atau gunakan skrip verifikasi mekanisme di `README.md` bagian Sesi 8 yang mendemonstrasikan alias berpindah secara terisolasi.
 
+---
+## 9. Sesi 7 — Incident Handling
+
 | Fase | Slide/Aktivitas |
 |---|---|
-| D (30’) — lab mandiri | Mahasiswa menjalankan `orchestration/pipeline.py` sendiri; tantangan: ubah `THRESHOLD` di `monitoring/monitor.py` agar drift **tidak** melewati ambang, jalankan ulang, verifikasi `retrain_and_compare()` tidak terpanggil sama sekali |
-| B lanjutan (25’) | `[Detail #88–90]` sintesis arsitektur → tata kelola & responsible AI → arah riset LLMOps |
-| E (10’) | `[Detail #91–92]` Rangkuman Sesi 8 + penutup "Satu Pipeline, Delapan Sesi" |
-| Penutup kelas | `[Ringkas #22]` Proyek Akhir — sampaikan rubrik & linimasa (§11 di bawah) |
-
----
+| A (10’) | `[Ringkas #64–67]` Penjelasan dan diskusi terkait incident handling|
+| B (5’)  | `[Detail #68]` Rangkuman dan penutup workshop DAY-3 |
 
 ## 9. Lampiran — Troubleshooting Cepat Selama Mengajar
 
