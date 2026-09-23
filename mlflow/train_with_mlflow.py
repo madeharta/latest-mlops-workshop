@@ -1,5 +1,5 @@
 """
-Sesi 4 -- Instrumentasi training dengan MLflow: tracking, perbandingan
+Instrumentasi training dengan MLflow: tracking, perbandingan
 eksperimen, dan registrasi model terbaik ke Model Registry.
 
 PENTING (lihat README / slide gotcha Sesi 4): backend tracking berbasis file
@@ -11,9 +11,8 @@ Jalankan:
     python3 mlflow/train_with_mlflow.py
 
 Lalu buka dashboard (dari root proyek):
-    mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
-    # buka http://127.0.0.1:5001
-    # (macOS: JANGAN pakai port 5000 -- dipakai AirPlay Receiver sejak Monterey)
+    mlflow ui --backend-store-uri sqlite:///mlflow.db --port 9001
+    # buka http://127.0.0.1:9001
 
 Skrip ini juga menandai model terbaik dengan alias registry "production" --
 inilah baseline yang nanti ditantang oleh mlflow/retrain_and_compare.py

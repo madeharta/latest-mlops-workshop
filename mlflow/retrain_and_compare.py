@@ -1,5 +1,5 @@
 """
-Sesi 8 -- Continuous Training (CT) dengan gerbang perbandingan.
+Continuous Training (CT) dengan gerbang perbandingan.
 
 Ini BUKAN sekadar "retrain lalu deploy otomatis" -- itu justru anti-pola
 yang bisa membuat model produksi memburuk tanpa disadari kalau data baru

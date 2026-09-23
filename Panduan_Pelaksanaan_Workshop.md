@@ -226,6 +226,8 @@ docker stop api && docker rm api
 
 ```bash
 # [Detail #59] docker-compose.yml, [Detail #60] menjalankan deploy.sh
+# Untuk Windows jalankan perintah berikut dari Git Bash, power shell tidak mendukung .sh 
+# Jika menggunakan power shell jalankan perintah docker compose build/up secara manual
 chmod +x docker/deploy.sh
 ./docker/deploy.sh
 ```
@@ -259,7 +261,8 @@ python3 monitoring/monitor.py
 Jalankan server evidently-ui dengan perintah berikut:
 
 ```bash
-sh run_evidently_service.sh
+# Untuk mac OS gunakan perintah berikut untuk menjalankan 
+sh monitoring/run_evidently_service.sh 
 
 # Jika shell tidak didukung pada environment anda atau workspace tidak ditampilkan, 
 # Matikan evidently-service dan jalankan dengan perintah berikut 
@@ -294,7 +297,7 @@ Buka `monitoring/drift_report.html` di browser — scroll ke tiga bagian: tabel 
 **Skrip demo:**
 ```bash
 pip install -r orchestration/requirements.txt   # In case prefect belum terinstall
-python -m prefect server start                  # Jalankan server prefect terlebih dahulu, server prefect dapat diakses pada http://127.0.0.1:4200`
+python3 -m prefect server start                  # Jalankan server prefect terlebih dahulu, server prefect dapat diakses pada http://127.0.0.1:4200`
 python3 orchestration/pipeline.py               # Jalankan pipeline orkestrasi, diuji tanpa dan dengan schedule/intervals
 ```
 Riwayat setiap run (kapan, task mana gagal/berhasil, PROMOTED atau tidak) tersimpan dan bisa dilihat lewat prefect server start + buka http://127.0.0.1:4200

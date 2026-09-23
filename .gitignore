@@ -9,6 +9,7 @@ __pycache__/
 # MLflow
 mlruns/
 mlflow.db
+mlartifacts/
 .mlflow_artifacts/
 
 # Models
