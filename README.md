@@ -36,7 +36,7 @@ mlops-workshop/
 ├── docker/
 │   ├── Dockerfile                    # Model deployment
 │   ├── docker-compose.yml            # deployment lokal (pengganti Cloud Run)
-│   ├── local_deploy.sh               # CI/CD lokal: export + build + redeploy
+│   ├── deploy.sh                     # CI/CD lokal: export + build + redeploy
 ├── monitoring/
 │   ├── monitor.py                    # Model monitoring: data drift + prediction drift + performance
 │   ├── run_evidently_service.sh      # Run evidently UI as docker container
