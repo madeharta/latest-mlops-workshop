@@ -1,35 +1,35 @@
 """
-Sesi 8 -- Orkestrasi CI/CD/CT dengan Prefect, sepenuhnya lokal.
-
-Membungkus skrip-skrip yang SUDAH ADA dari Sesi 4, 6, dan 7 -- tidak ada
-logika ML yang ditulis ulang di sini. Yang ditambahkan Prefect:
-  1. Urutan eksekusi yang tidak lagi ada "di kepala manusia"
-  2. Retry otomatis saat satu langkah gagal (build Docker, dsb.)
-  3. Percabangan kondisional GANDA:
-       a. retrain HANYA JIKA drift melewati ambang (CT dipicu oleh monitoring)
-       b. deploy HANYA JIKA model baru TERBUKTI lebih baik dari production
-          saat ini -- lihat mlflow/retrain_and_compare.py. Tanpa kodisi ini,
-          model produksi bisa memburuk tanpa disadari kalau data baru kebetulan 
-          menghasilkan model jelek.
-  4. Riwayat run yang bisa diaudit (Prefect UI: `prefect server start`)
+Orkestrasi CI/CD/CT dengan Prefect, sepenuhnya lokal.
 
 Deployment (CI build image + CD redeploy) berjalan seluruhnya di Docker lokal
-lewat docker/local_deploy.sh -- BUKAN Cloud Build/Cloud Run. Ini pendekatan yang
-dipakai untuk pelaksanaan workshop ini.
+lewat docker/deploy.sh
 
 Jalankan (dari root proyek, venv sudah aktif):
     python3 orchestration/pipeline.py
+
+⚠ CATATAN WINDOWS: subprocess di bawah memanggil sys.executable (interpreter
+Python yang sedang menjalankan pipeline.py ini), BUKAN string "python3" yang
+di-hardcode. Di Windows, venv hanya membuat python.exe -- tidak ada
+python3.exe sama sekali. Kalau "python3" dipanggil langsung, Windows bisa
+saja menemukan Python LAIN di PATH (mis. dari Microsoft Store) yang tidak
+punya pandas/evidently/mlflow ter-install -- subprocess itu lalu gagal
+dengan exit code bukan-nol, muncul di Prefect sebagai
+CalledProcessError(1, ['python3', ...]). sys.executable menjamin subprocess
+memakai environment yang SAMA PERSIS dengan yang menjalankan pipeline.py,
+di OS mana pun.
 """
 import subprocess
+import sys
 from prefect import flow, task
 
 
 @task(retries=2, retry_delay_seconds=5, log_prints=True)
 def check_drift() -> bool:
-    """Menjalankan monitor.py Sesi 7 dan membaca hasilnya -- bukan sekadar
-    dicetak, tapi dijadikan keputusan yang memicu langkah berikutnya."""
+    """Menjalankan monitor.py dan membaca hasilnya untuk 
+    dijadikan keputusan yang memicu langkah berikutnya."""
     result = subprocess.run(
-        ["python3", "monitoring/monitor.py"], capture_output=True, text=True, check=True
+        [sys.executable, "monitoring/monitor.py"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
     )
     print(result.stdout)
     return "melewati ambang" in result.stdout
@@ -43,7 +43,8 @@ def retrain_and_compare() -> bool:
     accuracy-nya lebih baik -- lihat mlflow/retrain_and_compare.py untuk
     logika lengkapnya. Return True hanya jika model baru dipromosikan."""
     result = subprocess.run(
-        ["python3", "mlflow/retrain_and_compare.py"], capture_output=True, text=True, check=True
+        [sys.executable, "mlflow/retrain_and_compare.py"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
     )
     print(result.stdout)
     return "PROMOTED" in result.stdout and "NOT_PROMOTED" not in result.stdout
@@ -52,21 +53,23 @@ def retrain_and_compare() -> bool:
 @task(retries=3, retry_delay_seconds=10, log_prints=True)
 def build_and_deploy_local() -> None:
     """CI (build image dari model production terbaru) + CD (redeploy
-    container lokal) dalam satu langkah -- memanggil docker/local_deploy.sh, yang
+    container lokal) dalam satu langkah -- memanggil docker/deploy.sh, yang
     di dalamnya: export_model.py -> docker compose build -> up --force-recreate
-    -> smoke test."""
+    -> smoke test.
+
+    ⚠ WINDOWS: "bash" di bawah ini butuh Git Bash atau WSL2 di PATH -- Command
+    Prompt/PowerShell murni tidak punya bash. Ini konsisten dengan kebutuhan
+    Windows untuk `make` di Sesi 2 (lihat README). Jalankan pipeline ini dari
+    dalam Git Bash/WSL2 kalau ingin build_and_deploy_local() ikut teruji."""
     result = subprocess.run(
-        #["bash", "docker/deploy.sh"], capture_output=True, text=True, check=True
-        ["bash", "docker/local_deploy.sh"], capture_output=True, text=True, check=True
+        ["bash", "docker/deploy.sh"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
     )
     print(result.stdout)
 
 
 @flow(name="insurance-approval-ci-cd-ct", log_prints=True)
 def mlops_pipeline():
-    """Satu graf yang menghubungkan Sesi 4, 6, dan 7 -- closing the loop
-    yang di Sesi 7 masih berupa kalimat kebijakan di README, sekarang
-    benar-benar dieksekusi, lengkap dengan gerbang kualitas sebelum deploy."""
     drift_exceeds_threshold = check_drift()
 
     if not drift_exceeds_threshold:

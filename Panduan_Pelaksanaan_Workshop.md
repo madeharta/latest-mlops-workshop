@@ -57,15 +57,18 @@ Checklist ini ada di `README.md` bagian "Sesi 0", mahasiswa menjalankannya mandi
 #### Mahasiswa memastikan sudah menginstall Docker Desktop dan VSCode serta melakukan pre-setup
 
 ```bash
-open -a Docker                                        # Menjalankan Docker Desktop
 code mlops-workshop                                   # Membuka kode sumber dengan VSCode
+open -a Docker                                        # Menjalankan Docker  Desktop via terminal in macOS 
+docker desktop start                                  # Menjalankan Docker Desktop via terminal in Windows
 
-python3 --version                                     # harus >3.10 
-python3 -m venv .venv && source .venv/bin/activate    # 3.11-3.14 valid; 3.11 default teraman. Untuk Windows aktivatsi virtual envirnomen dilukan dengan menjalankan perintah .venv/scripts/activate
+python3 --version                                     # harus >3.10, rekomendasi 3.11-3.14
+python3 -m venv .venv                                 # Membuat virtual environment. 
+source .venv/bin/activate                             # Aktivasi virtual environment di mac OS 
+.venv/scripts/activate                                # Aktivasi virtual environemtn di Windows 
 
 python3 -m pip install -r requirements.txt            # Install semua tools dan library yang diperlukan untuk menjalankan seluruh aktivitas
 python3 -c "import numpy; print(numpy.__version__)"   # harus >= 1.26 (tanpa batas atas)
-docker run hello-world                                # daemon Docker hidup
+docker run hello-world                                # daemon Docker hidup, jalankan perintah dari terminal VScode
 ```
 
 **Warning** Pastikan semua proses berjalan dengan baik tanpa error. Jika terjadi error silahkan laporkan ke Dosen atau TA, sebelum melanjutkan ke tahapan berikutnya. Kegagalan pada proses konfigurasi awal akan berdampak pada gagalnya tahapan workshop selanjutnya.
@@ -79,7 +82,6 @@ docker run hello-world                                # daemon Docker hidup
 cd mlops-workshop
 cat config.yml              # tunjukkan model+params
 cat train.py                # tunjukkan pembacaan config, tanpa hardcode
-make run
 ```
 Output yang harus muncul (rujuk `[Detail #13]`):
 ```
@@ -95,7 +97,7 @@ model:
   params: {n_estimators: 150, learning_rate: 0.08, max_depth: 3}
 ```
 ```bash
-make run     # accuracy berubah, train.py tidak disentuh sama sekali
+make run     # jalankan train.py
 make test    # 2 test pytest lulus
 
 # Jika Makefile tidak didukung, lakukan secara manual untuk pengujian
@@ -133,6 +135,7 @@ Registered version: 1
 ```
 Buka dashboard di proyektor:
 ```bash
+# Buka jedela terminal baru di VScode kemudian jalankan perintah berikut (pastikan .venv sudah aktif)
 mlflow ui --backend-store-uri sqlite:///mlflow.db --port 9001
 ```
 Buka `http://127.0.0.1:9001` di browser, tunjukkan tabel perbandingan (bandingkan dengan `[Detail #33]` screenshot), klik ke Model Registry, tunjukkan versi 1 ter-registrasi.
@@ -146,7 +149,7 @@ Lakukan explorasi fitur-fitur MLFlow dengan menjalankan kode-kode berikut secarf
 python3 mlflow/ztrain_with_mlflow_autologgin.py
 
 # Untuk menguji fitur autologgin dengan model regression
-python3 mlflow/ztrain_with_mlflow_autologgin.py
+python3 mlflow/ztrain_with_mlflow_regression.py
 
 # Untuk menguji fitur advanced tracking pada MLflow
 python3 mlflow/zmlflow_explore_tracking.py
@@ -166,6 +169,7 @@ Untuk setiap eksekusi program diatas, buka MLFlfow UI dan perhatikan informasi a
 
 **Skrip demo:**
 ```bash
+# Buka jedela terminal baru di VScode kemudian jalankan perintah berikut (pastikan .venv sudah aktif)
 cat api/app.py    # tunjukkan Pydantic ApplicantData + endpoint /predict
 uvicorn api.app:app --reload
 ```
@@ -177,7 +181,15 @@ Buka `http://127.0.0.1:8000/docs` di browser (bandingkan dengan `[Detail #45]`),
 **Demo debugging (`[Detail #47–48]`)** — tekan `F5` di VS Code, pasang breakpoint di baris `proba = model.predict_proba(df)[0][1]` pada `api/app.py`, kirim request dari terminal lain:
 ```bash
 curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" \
-  -d '{"age":34,"income":78000,"bmi":24.5,"tenure_months":18,"num_claims":1,"credit_score":720,"policy_value":150000,"risk_score":42.5}'
+-d '{"age":34,"income":78000,"bmi":24.5,"tenure_months":18,"num_claims":1,"credit_score":720,"policy_value":150000,"risk_score":42.5}'
+
+# Sometime curl syntax can be messy, try the following one in Windows from VScode terminal:
+curl.exe -X POST "http://127.0.0.1:8000/predict" `
+  -H "Content-Type: application/json" `
+  -d '{\"age\":34,\"income\":78000,\"bmi\":24.5,\"tenure_months\":18,\"num_claims\":1,\"credit_score\":720,\"policy_value\":150000,\"risk_score\":42.5}'
+
+# If it does not work, just try the API from the browser by editing the request body and observe the result.
+
 ```
 Tunjukkan eksekusi berhenti di breakpoint, inspeksi variabel `df`.
 
@@ -215,7 +227,7 @@ docker stop api && docker rm api
 ```bash
 # [Detail #59] docker-compose.yml, [Detail #60] menjalankan deploy.sh
 chmod +x docker/deploy.sh
-./docker/local_deploy.sh
+./docker/deploy.sh
 ```
 Script ini menjalankan CI (export model + build image) dan CD (redeploy container + smoke test) berurutan — jelaskan tiap tahap saat log muncul di terminal.
 
@@ -239,20 +251,24 @@ python3 scripts/test_deployment.py
 | D (20’) | `[Detail #54-56]` Penetapan kriteria re-trainning model dan dampaknya |
 
 **Skrip demo:**
-Jalankan server evidently-ui dengan perintah berikut:
-
-```bash
-sh run_evidently_service.sh
-```
-Server ini akan menampilkan report monitoring yang disimpan oleh evidently pada workspace yang dibuat. Selanjutnya jalankan code monitoring dengan perintah berikut:
+Jalankan code monitoring dengan perintah berikut:
 
 ```bash
 python3 monitoring/monitor.py
 ```
+Jalankan server evidently-ui dengan perintah berikut:
+
+```bash
+sh run_evidently_service.sh
+
+# Jika shell tidak didukung pada environment anda atau workspace tidak ditampilkan, 
+# Matikan evidently-service dan jalankan dengan perintah berikut 
+docker run -p 9002:8000 -v "${PWD}/monitoring/.workspace:/app/workspace" --name evidently-service --detach evidently/evidently-service:latest
+```
+Server ini akan menampilkan report monitoring yang disimpan oleh evidently pada workspace yang dibuat yang dapat diakses melalui http://localhost:9002. 
+
 Output nyata:
 ```
-Laporan tersimpan di monitoring/drift_report.html atau melalui halaman monitoring evidently-ui yang dapat diakses melalui http://localhost:9002. 
-
 1. DATA DRIFT        -- 3/8 kolom input drift (share: 0.375)
 2. PREDICTION DRIFT  -- tidak terdeteksi pada output model
 3. MODEL/CONCEPT DRIFT (performance) -- accuracy: 0.9380 -> 0.8880  |  ROC-AUC: 0.9817 -> 0.9575
@@ -281,12 +297,8 @@ pip install -r orchestration/requirements.txt   # In case prefect belum terinsta
 python -m prefect server start                  # Jalankan server prefect terlebih dahulu, server prefect dapat diakses pada http://127.0.0.1:4200`
 python3 orchestration/pipeline.py               # Jalankan pipeline orkestrasi, diuji tanpa dan dengan schedule/intervals
 ```
+Riwayat setiap run (kapan, task mana gagal/berhasil, PROMOTED atau tidak) tersimpan dan bisa dilihat lewat prefect server start + buka http://127.0.0.1:4200
 
-```bash
-pip install -r orchestration/requirements.txt
-python -m prefect server start
-python3 orchestration/pipeline.py
-```
 Tunjukkan log Prefect live di terminal — perhatikan tiga hal: (1) nama task (`check_drift-xxx`, `retrain_and_compare-xxx`), (2) baris `PROMOTED`/`NOT_PROMOTED` yang menentukan apakah deploy dijalankan, dan (3) bahwa `build_and_deploy_local()` **hanya terpanggil kalau** kandidat baru benar-benar lebih baik dari `production` saat ini. Karena deployment sepenuhnya lokal (Docker, bukan GCP), demo ini bisa dibiarkan berjalan sampai selesai tanpa bergantung kredensial cloud apa pun.
 
 > **Poin pedagogis kunci**: kemungkinan besar hasil pertama adalah `NOT_PROMOTED` (data retraining identik dengan data yang sudah dipakai) — ini **bukan kegagalan demo**, justru bukti gerbang kualitas bekerja. Siapkan skenario `PROMOTED` sebagai cadangan: jalankan `mlflow/retrain_and_compare.py` secara terpisah setelah mengubah `data/train.csv` (mis. gabungkan dengan data tambahan), atau gunakan skrip verifikasi mekanisme di `README.md` bagian Sesi 8 yang mendemonstrasikan alias berpindah secara terisolasi.

@@ -22,10 +22,11 @@ import os
 import joblib
 import mlflow.sklearn
 
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
+#mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_tracking_uri("http://127.0.0.1:9001")
 
 MODEL_NAME = "insurance-approval-model"
-ALIAS = "production"
+ALIAS = "champion"
 
 model = mlflow.sklearn.load_model(f"models:/{MODEL_NAME}@{ALIAS}")
 

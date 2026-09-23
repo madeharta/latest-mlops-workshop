@@ -1,5 +1,5 @@
 model:
-  name: RandomForest
+  name: GradientBoosting
   params:
     n_estimators: 200
     max_depth: 8
