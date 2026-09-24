@@ -87,7 +87,7 @@ try:
     print(f"Model production saat ini: versi {current_prod.version} (accuracy={prod_acc:.4f})")
 except mlflow.exceptions.MlflowException:
     # Belum ada model production sama sekali -- jalankan train_with_mlflow.py dulu (Sesi 4)
-    print("Belum ada model dengan alias 'production'. Jalankan mlflow/train_with_mlflow.py terlebih dahulu.")
+    print("Belum ada model dengan alias 'champion'. Jalankan mlflow/train_with_mlflow.py terlebih dahulu.")
     sys.exit(1)
 
 # --- 3. Registrasi kandidat (SELALU, untuk audit trail) ------------------
